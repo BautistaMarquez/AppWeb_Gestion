@@ -3,6 +3,7 @@ export interface BaseResponse {
   id: number;
   createdAt?: string; // Las fechas vienen como ISO string desde el JSON
   updatedAt?: string;
+  createdBy?: string;
 }
 
 // Estados Críticos del Negocio

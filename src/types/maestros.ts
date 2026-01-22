@@ -26,3 +26,42 @@ export interface Conductor extends BaseResponse {
   equipoId: number;
   licenciaVencimiento: string;
 }
+
+/**
+ * Representa el Usuario (Supervisor) dentro de un Equipo
+ * Basado en UsuarioResponseDTO.java
+ */
+export interface UsuarioResumen {
+  mail: string;
+  nombre: string;
+  apellido: string;
+  rol: string;
+}
+
+/**
+ * Interfaz para Listados (Grillas)
+ * Basado en EquipoResponseDTO.java
+ */
+export interface Equipo extends BaseResponse {
+  nombre: string;
+  supervisorNombreCompleto: string; // El back aplana esta relación para la UI
+}
+
+/**
+ * Interfaz para la Vista de Detalle / Edición
+ * Basado en EquipoDetalleResponseDTO.java
+ */
+export interface EquipoDetalle extends BaseResponse {
+  nombre: string;
+  supervisor: UsuarioResumen;
+  conductores: Conductor[]; // Lista de conductores asignados
+}
+
+/**
+ * DTO para Creación y Actualización
+ * Basado en EquipoRequestDTO.java
+ */
+export interface EquipoRequest {
+  nombre: string;
+  supervisorId: number; // Solo enviamos el ID al backend
+}
