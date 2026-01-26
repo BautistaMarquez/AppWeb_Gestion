@@ -8,7 +8,7 @@ export const authService = {
    * @returns AuthResponseDTO con token, email y rol
    */
   login: async (credentials: LoginRequestDTO): Promise<AuthResponseDTO> => {
-    const response = await api.post<AuthResponseDTO>('/api/v1/auth/login', credentials);
+    const response = await api.post<AuthResponseDTO>('/auth/login', credentials);
     return response.data;
   },
 
@@ -18,6 +18,6 @@ export const authService = {
    * @returns Promise que se resuelve cuando la operación es exitosa
    */
   changePassword: async (data: ChangePasswordRequestDTO): Promise<void> => {
-    await api.patch('/api/v1/auth/change-password', data);
+    await api.patch('/auth/change-password', data);
   },
 };

@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import DashboardHome from '@/components/DashboardHome';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import type { RolUsuario } from '@/types/auth';
+import LoginPage from '@/pages/Login';
 
 // Página de "No Autorizado" - Componente simple
 const UnauthorizedPage = () => {
@@ -20,18 +20,6 @@ const UnauthorizedPage = () => {
         >
           Volver al Inicio
         </a>
-      </div>
-    </div>
-  );
-};
-
-// Página de Login - Placeholder (será implementada después)
-const LoginPage = () => {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-50">
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-bold text-slate-900">Iniciar Sesión</h1>
-        <p className="text-slate-600">Página de login (pendiente de implementación)</p>
       </div>
     </div>
   );
