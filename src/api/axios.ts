@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import type { ErrorResponse } from '@/types/auth';
 
 // 1. Extraemos la URL de nuestra variable de entorno
 const API_URL = import.meta.env.VITE_API_URL;
@@ -12,13 +13,27 @@ const api = axios.create({
 
 // Interceptor de Petición (Salida)
 api.interceptors.request.use(
-  (config) => {
-    // Obtenemos el token del localStorage (más adelante lo moveremos a Zustand)
-    const token = localStorage.getItem('token');
-    
+  (config: InternalAxiosRequestConfig) => {
+    // Obtener token de forma síncrona desde localStorage (donde Zustand persist lo guarda)
+    // Esto evita dependencias circulares con el store
+    const getToken = (): string | null => {
+      try {
+        const authStorage = localStorage.getItem('auth-storage');
+        if (authStorage) {
+          const parsed = JSON.parse(authStorage);
+          return parsed?.state?.token || null;
+        }
+      } catch {
+        return null;
+      }
+      return null;
+    };
+
+    const token = getToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
     return config;
   },
   (error) => Promise.reject(error)
@@ -27,15 +42,23 @@ api.interceptors.request.use(
 // Interceptor de Respuesta (Entrada)
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error: AxiosError<ErrorResponse>) => {
     // Si el Back nos da 401 (No autorizado/Token expirado)
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login'; // Redirección forzada
+      // Importación dinámica para evitar dependencia circular
+      const { useAuthStore } = await import('@/store/authStore');
+      useAuthStore.getState().logout();
+      
+      // Redirigir al login solo si no estamos ya en la página de login
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     
-    // Aquí podemos mapear el ErrorResponse que definimos en Java
-    const message = error.response?.data?.message || 'Error inesperado en el servidor';
+    // Extraer mensaje del ErrorResponse del backend
+    const errorResponse = error.response?.data;
+    const message = errorResponse?.mensaje || errorResponse?.codigo || 'Error inesperado en el servidor';
+    
     return Promise.reject(new Error(message));
   }
 );

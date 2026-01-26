@@ -1,19 +1,23 @@
 import api from '../axios';
+import type { LoginRequestDTO, AuthResponseDTO, ChangePasswordRequestDTO } from '@/types/auth';
 
 export const authService = {
-  login: async (credenciales: any) => {
-    const response = await api.post('/auth/login', credenciales);
-    // Guardamos el token si la respuesta es exitosa
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
+  /**
+   * Inicia sesión con las credenciales proporcionadas
+   * @param credentials - Email y contraseña del usuario
+   * @returns AuthResponseDTO con token, email y rol
+   */
+  login: async (credentials: LoginRequestDTO): Promise<AuthResponseDTO> => {
+    const response = await api.post<AuthResponseDTO>('/api/v1/auth/login', credentials);
     return response.data;
   },
 
-  getProfile: async () => (await api.get('/auth/me')).data,
-
-  logout: () => {
-    localStorage.removeItem('token');
-    window.location.href = '/login';
-  }
+  /**
+   * Cambia la contraseña del usuario autenticado
+   * @param data - Contraseña actual y nueva contraseña
+   * @returns Promise que se resuelve cuando la operación es exitosa
+   */
+  changePassword: async (data: ChangePasswordRequestDTO): Promise<void> => {
+    await api.patch('/api/v1/auth/change-password', data);
+  },
 };

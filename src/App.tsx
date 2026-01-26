@@ -1,13 +1,18 @@
-import './index.css'
-import DashboardLayout from "./layouts/DashboardLayout";
-import DashboardHome from "./components/DashboardHome";
-
+import './index.css';
+import { RouterProvider } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import { router } from './router';
 
 function App() {
   return (
-    <DashboardLayout>
-      <DashboardHome />
-    </DashboardLayout>
+    <>
+      <RouterProvider router={router} />
+      <Toaster 
+        position="top-right"
+        richColors
+        closeButton
+      />
+    </>
   );
 }
 
