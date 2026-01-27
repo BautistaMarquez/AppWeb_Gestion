@@ -3,6 +3,8 @@ import DashboardLayout from '@/layouts/DashboardLayout';
 import DashboardHome from '@/components/DashboardHome';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import LoginPage from '@/pages/Login';
+import DashboardStats from '@/pages/DashboardStats';
+import ModuleMenuPlaceholder from '@/pages/ModuleMenuPlaceholder';
 
 // Página de "No Autorizado" - Componente simple
 const UnauthorizedPage = () => {
@@ -40,6 +42,105 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <DashboardLayout>
           <DashboardHome />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/dashboard',
+    element: (
+      <ProtectedRoute allowedRoles={['SUPERVISOR', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <DashboardStats />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/logistica',
+    element: (
+      <ProtectedRoute allowedRoles={['SUPERVISOR_PLANTA', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <ModuleMenuPlaceholder
+            title="Gestión de Logística (Viajes)"
+            description="Sub-menú del módulo (placeholder)."
+            actions={[
+              'Iniciar viaje: registro con validación de disponibilidad de Vehículo y Conductor.',
+              'Control de flota en ruta: listado de viajes en estado EN_PROCESO.',
+              'Finalización de viaje: cierre de auditoría con carga de stock de retorno.',
+            ]}
+          />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/productos',
+    element: (
+      <ProtectedRoute allowedRoles={['ADMINISTRATIVO', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <ModuleMenuPlaceholder
+            title="Gestión de Productos"
+            description="Sub-menú del módulo (placeholder)."
+            actions={[
+              'CRUD de Productos (Alta / Baja / Modificación).',
+              'Gestión de Tarifarios: etiquetas (Mayorista/Minorista) y actualización de valores.',
+            ]}
+          />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/personal',
+    element: (
+      <ProtectedRoute allowedRoles={['ADMINISTRATIVO', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <ModuleMenuPlaceholder
+            title="Gestión de Personal"
+            description="Sub-menú del módulo (placeholder)."
+            actions={[
+              'CRUD de Usuarios del sistema (con asignación de Roles).',
+              'Registro y legajo de Conductores.',
+              'Conformación de Equipos de Trabajo (Asociación Supervisor-Conductor).',
+            ]}
+          />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/vehiculos',
+    element: (
+      <ProtectedRoute allowedRoles={['ADMINISTRATIVO', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <ModuleMenuPlaceholder
+            title="Gestión de Vehículos"
+            description="Sub-menú del módulo (placeholder)."
+            actions={[
+              'Registro de Unidades (Patente, Modelo).',
+              'Control de Estado (DISPONIBLE, MANTENIMIENTO, EN_VIAJE).',
+            ]}
+          />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    // Link existente en el sidebar: lo enviamos al módulo Personal por ahora
+    path: '/conductores',
+    element: (
+      <ProtectedRoute allowedRoles={['ADMINISTRATIVO', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <ModuleMenuPlaceholder
+            title="Conductores"
+            description="Acceso directo (placeholder) dentro de Gestión de Personal."
+            actions={[
+              'Registro y legajo de Conductores.',
+              'Asignación a Equipos de Trabajo.',
+              'Búsqueda y filtros (próximo paso).',
+            ]}
+          />
         </DashboardLayout>
       </ProtectedRoute>
     ),
