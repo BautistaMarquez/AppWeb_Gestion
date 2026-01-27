@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { LayoutDashboard, Truck, Package, Users, User, Key, LogOut, ChevronUp } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { User, Key, LogOut, ChevronUp } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +12,7 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent,
   SidebarFooter,
+  useSidebar, // Hook necesario para detectar el estado colapsado
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -22,95 +24,120 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/authStore";
 import { useAuth } from "@/hooks/useAuth";
+import { MODULES_CONFIG } from "@/config/navigation";
 import UserProfileDialog from "@/components/UserProfileDialog";
 import ChangePasswordForm from "@/components/ChangePasswordForm";
 
 export function AppSidebar() {
   const { user } = useAuthStore();
   const { logout } = useAuth();
+  const location = useLocation();
+  const { state } = useSidebar(); // Obtiene 'expanded' o 'collapsed'
+  
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
-  // Extraer nombre del email para mostrar
+  const isCollapsed = state === "collapsed";
+
+  const visibleModules = useMemo(() => {
+    if (!user?.rol) return [];
+    return MODULES_CONFIG.filter((m) => m.allowedRoles.includes(user.rol));
+  }, [user?.rol]);
+
+  const operacionesModules = visibleModules.filter(m => m.group === "operaciones");
+  const maestrosModules = visibleModules.filter(m => m.group === "maestros");
+
   const displayName = user?.email.split("@")[0] || "Usuario";
-  const userName = displayName.includes(".")
-    ? displayName.split(".")[0]
-    : displayName;
+  const userName = displayName.includes(".") ? displayName.split(".")[0] : displayName;
 
   return (
     <>
       <Sidebar variant="sidebar" collapsible="icon">
-        <SidebarHeader className="h-16 border-b flex items-center px-6">
+        <SidebarHeader className="h-16 border-b flex items-center px-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-primary-foreground font-bold text-xs">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-slate-800 text-white font-bold text-sm">
               B
             </div>
+            {!isCollapsed && (
+              <span className="font-semibold text-slate-900 truncate animate-in fade-in duration-300">
+                Bebidas ERP
+              </span>
+            )}
           </div>
         </SidebarHeader>
         
         <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Operaciones</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Dashboard" asChild>
-                    <a href="/">
-                      <LayoutDashboard />
-                      <span>Dashboard</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Logística" asChild>
-                    <a href="/logistica">
-                      <Truck />
-                      <span>Logística</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+          {/* GRUPO: OPERACIONES */}
+          {operacionesModules.length > 0 && (
+            <SidebarGroup>
+              <SidebarGroupLabel>Operaciones</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {operacionesModules.map((module) => (
+                    <SidebarMenuItem key={module.id}>
+                      <SidebarMenuButton 
+                        tooltip={module.title} 
+                        asChild 
+                        isActive={location.pathname === module.routeFront}
+                      >
+                        <Link to={module.routeFront}>
+                          <module.icon />
+                          <span>{module.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
 
-          <SidebarGroup>
-            <SidebarGroupLabel>Maestros</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Productos" asChild>
-                    <a href="/productos">
-                      <Package />
-                      <span>Productos</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Conductores" asChild>
-                    <a href="/conductores">
-                      <Users />
-                      <span>Conductores</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+          {/* GRUPO: MAESTROS */}
+          {maestrosModules.length > 0 && (
+            <SidebarGroup>
+              <SidebarGroupLabel>Maestros</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {maestrosModules.map((module) => (
+                    <SidebarMenuItem key={module.id}>
+                      <SidebarMenuButton 
+                        tooltip={module.title} 
+                        asChild
+                        isActive={location.pathname === module.routeFront}
+                      >
+                        <Link to={module.routeFront}>
+                          <module.icon />
+                          <span>{module.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
         </SidebarContent>
 
         <SidebarFooter className="border-t p-2">
-          {user && (
+          {/* Si está colapsado, solo mostramos el avatar sin dropdown para cumplir tu regla */}
+          {user && isCollapsed ? (
+            <div className="flex h-10 w-full items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-semibold shadow-sm">
+                {userName.charAt(0).toUpperCase()}
+              </div>
+            </div>
+          ) : user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-semibold">
+                <button className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-slate-100 transition-colors focus:outline-none">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-semibold">
                     {userName.charAt(0).toUpperCase()}
                   </div>
-                  <div className="flex flex-1 flex-col items-start overflow-hidden">
-                    <span className="truncate text-sm font-medium">
+                  <div className="flex flex-1 flex-col items-start overflow-hidden text-left">
+                    <span className="truncate text-sm font-medium w-full">
                       {userName.charAt(0).toUpperCase() + userName.slice(1)}
                     </span>
-                    <span className="truncate text-xs text-muted-foreground">
+                    <span className="truncate text-xs text-muted-foreground w-full">
                       {user.email}
                     </span>
                   </div>
@@ -143,14 +170,8 @@ export function AppSidebar() {
         </SidebarFooter>
       </Sidebar>
 
-      <UserProfileDialog
-        open={isProfileOpen}
-        onOpenChange={setIsProfileOpen}
-      />
-      <ChangePasswordForm
-        open={isChangePasswordOpen}
-        onOpenChange={setIsChangePasswordOpen}
-      />
+      <UserProfileDialog open={isProfileOpen} onOpenChange={setIsProfileOpen} />
+      <ChangePasswordForm open={isChangePasswordOpen} onOpenChange={setIsChangePasswordOpen} />
     </>
   );
 }
