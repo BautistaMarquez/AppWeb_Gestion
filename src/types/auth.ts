@@ -1,11 +1,32 @@
 // Tipos de Autenticación - Reflejo de los DTOs del Backend
 
+import type { BaseResponse } from "./common";
+
 export type RolUsuario = 
   | 'ADMIN' 
   | 'SUPERVISOR' 
   | 'ADMINISTRATIVO' 
   | 'SUPERVISOR_PLANTA' 
   | 'TOTAL';
+
+
+// Usuario 
+export interface Usuario extends BaseResponse {
+  id: number;
+  mail: string;
+  nombre: string;
+  apellido: string;
+  rol: RolUsuario;
+  activo: boolean;
+}
+
+export interface UsuarioRequest {
+  mail: string;
+  password?: string;
+  nombre: string;
+  apellido: string;
+  rol: RolUsuario;
+}
 
 // LoginRequestDTO
 export interface LoginRequestDTO {
