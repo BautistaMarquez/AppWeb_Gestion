@@ -47,7 +47,11 @@ export const maestrosService = {
 
   // --- USUARIOS (Gestión de Personal) ---
   
-  getUsuarios: async () => (await api.get<Usuario[]>('/usuarios')).data,
+  getUsuarios: async () => {
+    const response = await api.get<any>('/usuarios');
+    // Si el backend devuelve una Page de Spring Data, los datos están en .content
+    return response.data.content || response.data;
+    },
 
   getUsuarioById: async (id: number) => (await api.get<Usuario>(`/usuarios/${id}`)).data,
 
@@ -60,4 +64,9 @@ export const maestrosService = {
   toggleEstadoUsuario: async (id: number, activo: boolean) => 
     (await api.patch<Usuario>(`/usuarios/${id}/estado`, { activo })).data,
 
+  resetPassword: async (id: number, nuevaPassword: string) => 
+    (await api.put<Usuario>(`/usuarios/${id}/reset-password`, { nuevaPassword })).data,
+
+  desactivarUsuario: async (id: number) => 
+    (await api.patch<Usuario>(`/usuarios/${id}/desactivar`)).data,
 };
