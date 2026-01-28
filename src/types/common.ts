@@ -15,7 +15,9 @@ export const EstadoVehiculo = {
 
 export const EstadoConductor = {
   DISPONIBLE: 'DISPONIBLE',
-  OCUPADO: 'OCUPADO'
+  OCUPADO: 'OCUPADO',
+  LICENCIA_VENCIDA: 'LICENCIA_VENCIDA',
+  ELIMINADO: 'ELIMINADO'
 } as const;
 
 export const EstadoViaje = {

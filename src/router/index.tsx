@@ -7,8 +7,8 @@ import DashboardStats from '@/pages/DashboardStats';
 import ModuleMenuPlaceholder from '@/pages/ModuleMenuPlaceholder';
 import PersonalMenu from '@/pages/personal/PersonalMenu';
 import UsuariosPage from '@/pages/personal/UsuariosPage';
-//import ConductoresPage from '@/pages/personal/ConductoresPage';
-//import EquiposPage from '@/pages/personal/EquiposPage';
+import ConductoresPage from '@/pages/personal/ConductoresPage';
+import EquiposPage from '@/pages/personal/EquiposPage';
 
 // Página de "No Autorizado" - Componente simple
 const UnauthorizedPage = () => {
@@ -153,9 +153,9 @@ export const router = createBrowserRouter([
   path: "personal",
   children: [
     { index: true, element: <PersonalMenu /> }, // La pantalla de las 3 cards
-    { path: "usuarios", element: <UsuariosPage /> }, // El CRUD que haremos luego
-    //{ path: "conductores", element: <ConductoresPage /> },
-    //{ path: "equipos", element: <EquiposPage /> },
+    { path: "usuarios", element: <UsuariosPage /> },
+    { path: "conductores", element: <ConductoresPage /> },
+    { path: "equipos", element: <EquiposPage /> },
   ]
   },
   // Ejemplo de rutas protegidas con roles específicos

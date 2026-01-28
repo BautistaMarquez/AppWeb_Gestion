@@ -21,10 +21,18 @@ export interface Vehiculo extends BaseResponse {
 export interface Conductor extends BaseResponse {
   nombre: string;
   apellido: string;
-  dni: number;
+  dni: string;
   estado: EstadoConductor;
-  equipoId: number;
   licenciaVencimiento: string;
+  nombreEquipo: string; // Flattening desde el backend
+}
+
+export interface ConductorRequest {
+  nombre: string;
+  apellido: string;
+  dni: string;
+  licenciaVencimiento: string; // ISO date string
+  equipoId: number;
 }
 
 /**
