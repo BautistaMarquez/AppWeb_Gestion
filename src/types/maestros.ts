@@ -32,7 +32,7 @@ export interface ConductorRequest {
   apellido: string;
   dni: string;
   licenciaVencimiento: string; // ISO date string
-  equipoId: number;
+  equipoId?: number;
 }
 
 /**

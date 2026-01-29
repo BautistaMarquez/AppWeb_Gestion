@@ -28,8 +28,9 @@ export const conductorSchema = z.object({
     }, "La fecha de vencimiento debe ser futura"),
   
   equipoId: z
-    .number({ message: "Debes seleccionar un equipo" })
-    .positive("Debes seleccionar un equipo válido"),
+    .number()
+    .positive("Debes seleccionar un equipo válido")
+    .optional(),
 });
 
 // Extraemos el tipo automáticamente del esquema

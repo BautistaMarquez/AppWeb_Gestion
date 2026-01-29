@@ -65,7 +65,6 @@ const getEstadoBadge = (estado: EstadoConductorType) => {
 
 const estadosDisponibles: EstadoConductorType[] = [
   "DISPONIBLE",
-  "OCUPADO",
   "LICENCIA_VENCIDA",
   "ELIMINADO"
 ];

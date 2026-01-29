@@ -77,6 +77,9 @@ export const maestrosService = {
   asignarConductor: async (equipoId: number, conductorId: number) => 
     await api.patch(`/equipos/${equipoId}/conductores/${conductorId}`),
 
+  desasignarConductor: async (equipoId: number, conductorId: number) =>
+    await api.patch(`/equipos/${equipoId}/conductores/${conductorId}/desasignar`),
+
   // --- USUARIOS (Gestión de Personal) ---
   
   getUsuarios: async () => {
@@ -85,11 +88,8 @@ export const maestrosService = {
     return response.data.content || response.data;
   },
 
-  getSupervisores: async () => {
-    const usuarios = await maestrosService.getUsuarios();
-    // Filtrar solo supervisores
-    return usuarios.filter((u: Usuario) => u.rol === 'SUPERVISOR');
-  },
+  getSupervisores: async () =>
+    (await api.get<Usuario[]>('/usuarios/rol/supervisor/disponibles')).data,
 
   getUsuarioById: async (id: number) => (await api.get<Usuario>(`/usuarios/${id}`)).data,
 

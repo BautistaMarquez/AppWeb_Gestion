@@ -9,7 +9,8 @@ import {
   Users,
   Eye,
   UserPlus,
-  UserCog
+  UserCog,
+  UserMinus
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -55,7 +56,7 @@ import type { Equipo, EquipoDetalle, Conductor } from "@/types/maestros";
 import type { Usuario } from "@/types/auth";
 import { CreateEquipoForm } from "@/components/CreateEquipoForm";
 
-type ModalType = 'crear' | 'detalle' | 'asignarSupervisor' | 'asignarConductor' | null;
+type ModalType = 'crear' | 'detalle' | 'asignarSupervisor' | 'asignarConductor' | 'desasignarConductor' | null;
 
 export default function EquiposPage() {
   const navigate = useNavigate();
@@ -72,8 +73,10 @@ export default function EquiposPage() {
   // Estados para Asignaciones
   const [supervisores, setSupervisores] = useState<Usuario[]>([]);
   const [conductoresDisponibles, setConductoresDisponibles] = useState<Conductor[]>([]);
+  const [conductoresAsignados, setConductoresAsignados] = useState<Conductor[]>([]);
   const [supervisorSeleccionado, setSupervisorSeleccionado] = useState<string>("");
   const [conductorSeleccionado, setConductorSeleccionado] = useState<string>("");
+  const [conductorDesasignarSeleccionado, setConductorDesasignarSeleccionado] = useState<string>("");
 
   const myRole = useAuthStore((state) => state.user?.rol);
 
@@ -141,6 +144,22 @@ export default function EquiposPage() {
     }
   };
 
+  // Abrir modal de desasignar conductor
+  const handleAbrirDesasignarConductor = async (equipo: Equipo) => {
+    try {
+      setIsProcessing(true);
+      const detalle = await maestrosService.getEquipoDetalle(equipo.id);
+      setConductoresAsignados(detalle.conductores || []);
+      setEquipoSeleccionado(equipo);
+      setConductorDesasignarSeleccionado("");
+      setModalType('desasignarConductor');
+    } catch (error) {
+      toast.error("Error al cargar conductores del equipo");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   // Asignar supervisor
   const handleAsignarSupervisor = async () => {
     if (!equipoSeleccionado || !supervisorSeleccionado) return;
@@ -185,6 +204,32 @@ export default function EquiposPage() {
     }
   };
 
+  // Desasignar conductor
+  const handleDesasignarConductor = async () => {
+    if (!equipoSeleccionado || !conductorDesasignarSeleccionado) return;
+
+    try {
+      setIsProcessing(true);
+      await maestrosService.desasignarConductor(
+        equipoSeleccionado.id,
+        parseInt(conductorDesasignarSeleccionado)
+      );
+      toast.success("Conductor desasignado del equipo");
+      setConductorDesasignarSeleccionado("");
+
+      const detalleActualizado = await maestrosService.getEquipoDetalle(equipoSeleccionado.id);
+      setEquipoDetalle(detalleActualizado);
+      setConductoresAsignados(detalleActualizado.conductores || []);
+
+      fetchEquipos();
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || "Error al desasignar conductor";
+      toast.error(errorMsg);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const filteredEquipos = equipos.filter(e => 
     e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     e.supervisorNombreCompleto.toLowerCase().includes(searchTerm.toLowerCase())
@@ -196,6 +241,8 @@ export default function EquiposPage() {
     setEquipoDetalle(null);
     setSupervisorSeleccionado("");
     setConductorSeleccionado("");
+    setConductorDesasignarSeleccionado("");
+    setConductoresAsignados([]);
   };
 
   return (
@@ -295,6 +342,9 @@ export default function EquiposPage() {
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleAbrirAsignarConductor(equipo)}>
                                 <UserPlus className="mr-2 h-4 w-4" /> Asignar Conductor
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleAbrirDesasignarConductor(equipo)}>
+                                <UserMinus className="mr-2 h-4 w-4" /> Desasignar Conductor
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -475,6 +525,51 @@ export default function EquiposPage() {
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 "Confirmar Asignación"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL: DESASIGNAR CONDUCTOR */}
+      <Dialog open={modalType === 'desasignarConductor'} onOpenChange={closeModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Desasignar Conductor del Equipo</DialogTitle>
+            <DialogDescription>
+              Equipo: <span className="font-semibold text-slate-900">{equipoSeleccionado?.nombre}</span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Select value={conductorDesasignarSeleccionado} onValueChange={setConductorDesasignarSeleccionado}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona un conductor" />
+              </SelectTrigger>
+              <SelectContent>
+                {conductoresAsignados.length === 0 ? (
+                  <div className="p-2 text-sm text-slate-500">
+                    No hay conductores asignados a este equipo
+                  </div>
+                ) : (
+                  conductoresAsignados.map((conductor) => (
+                    <SelectItem key={conductor.id} value={conductor.id.toString()}>
+                      {conductor.nombre} {conductor.apellido} - DNI: {conductor.dni}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={closeModal}>Cancelar</Button>
+            <Button 
+              disabled={!conductorDesasignarSeleccionado || isProcessing} 
+              onClick={handleDesasignarConductor}
+            >
+              {isProcessing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Confirmar Desasignación"
               )}
             </Button>
           </DialogFooter>

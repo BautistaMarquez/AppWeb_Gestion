@@ -144,8 +144,10 @@ export function CreateConductorForm({ onSuccess, onCancel }: CreateConductorForm
             <FormItem>
               <FormLabel>Equipo de Trabajo</FormLabel>
               <Select 
-                onValueChange={(value) => field.onChange(parseInt(value))} 
-                value={field.value?.toString()}
+                onValueChange={(value) =>
+                  field.onChange(value === "none" ? undefined : parseInt(value))
+                }
+                value={field.value?.toString() ?? "none"}
                 disabled={loadingEquipos}
               >
                 <FormControl>
@@ -154,6 +156,7 @@ export function CreateConductorForm({ onSuccess, onCancel }: CreateConductorForm
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
+                  <SelectItem value="none">Sin equipo</SelectItem>
                   {equipos.map((equipo) => (
                     <SelectItem key={equipo.id} value={equipo.id.toString()}>
                       {equipo.nombre} - {equipo.supervisorNombreCompleto}
@@ -170,7 +173,7 @@ export function CreateConductorForm({ onSuccess, onCancel }: CreateConductorForm
           <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Cancelar
           </Button>
-          <Button type="submit" disabled={isSubmitting || loadingEquipos} className="min-w-30">
+          <Button type="submit" disabled={isSubmitting} className="min-w-30">
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando
