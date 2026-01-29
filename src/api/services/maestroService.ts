@@ -56,6 +56,9 @@ export const maestrosService = {
   updateEstadoConductor: async (id: number, nuevoEstado: string) => 
     (await api.patch<Conductor>(`/conductores/${id}/estado`, { nuevoEstado })).data,
 
+  updateLicenciaConductor: async (id: number, nuevaFechaVencimiento: string) =>
+    (await api.patch<Conductor>(`/conductores/${id}/licencia`, { nuevaFechaVencimiento })).data,
+
   // --- EQUIPOS ---
   getEquipos: async (page = 0, size = 100) => {
     const response = await api.get<any>('/equipos', {

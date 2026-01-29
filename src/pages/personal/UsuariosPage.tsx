@@ -57,6 +57,12 @@ const getRoleBadge = (rol: RolUsuario) => {
   return styles[rol] || "bg-gray-100 text-gray-700";
 };
 
+const getEstadoBadge = (activo: boolean) => {
+  return activo
+    ? "bg-green-100 text-green-700 border-green-200"
+    : "bg-slate-100 text-slate-600 border-slate-200";
+};
+
 export default function UsuariosPage() {
   const navigate = useNavigate();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -177,15 +183,16 @@ return (
                   <TableRow>
                     <TableHead className="font-semibold">Usuario</TableHead>
                     <TableHead className="font-semibold w-40">Rol</TableHead> {/* Ancho fijo estándar */}
+                    <TableHead className="font-semibold w-32">Estado</TableHead>
                     <TableHead className="text-right font-semibold w-24">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                    <TableRow><TableCell colSpan={3} className="h-24 text-center">Cargando...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={4} className="h-24 text-center">Cargando...</TableCell></TableRow>
                   ) : filteredUsuarios.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={3} className="h-32 text-center text-muted-foreground">
+                      <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
                         No hay resultados.
                       </TableCell>
                     </TableRow>
@@ -203,26 +210,35 @@ return (
                             {user.rol}
                           </Badge>
                         </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={getEstadoBadge(user.activo)}>
+                            {user.activo ? "ACTIVO" : "INACTIVO"}
+                          </Badge>
+                        </TableCell>
                         <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56">
-                              <DropdownMenuLabel>Seguridad</DropdownMenuLabel>
-                              <DropdownMenuItem onClick={() => setUsuarioEnReset(user)}>
-                                <Key className="mr-2 h-4 w-4" /> Reset Password
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                disabled={user.mail === currentUser?.email}
-                                onClick={() => handleDesactivar(user)}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <ShieldAlert className="mr-2 h-4 w-4" /> Desactivar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          {user.activo ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuLabel>Seguridad</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => setUsuarioEnReset(user)}>
+                                  <Key className="mr-2 h-4 w-4" /> Reset Password
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  disabled={user.mail === currentUser?.email}
+                                  onClick={() => handleDesactivar(user)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <ShieldAlert className="mr-2 h-4 w-4" /> Desactivar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : (
+                            <span className="text-sm text-muted-foreground"></span>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))

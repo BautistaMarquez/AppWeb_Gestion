@@ -6,7 +6,8 @@ import {
   MoreHorizontal, 
   ArrowLeft,
   Loader2,
-  RefreshCcw
+  RefreshCcw,
+  CalendarDays
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -81,6 +82,10 @@ export default function ConductoresPage() {
   const [nuevoEstado, setNuevoEstado] = useState<EstadoConductorType | "">("");
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const [conductorEnLicencia, setConductorEnLicencia] = useState<Conductor | null>(null);
+  const [nuevaFechaLicencia, setNuevaFechaLicencia] = useState("");
+  const [isUpdatingLicencia, setIsUpdatingLicencia] = useState(false);
+
   const myRole = useAuthStore((state) => state.user?.rol);
 
   const fetchConductores = async () => {
@@ -115,6 +120,54 @@ export default function ConductoresPage() {
       toast.error("Error al actualizar el estado");
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const normalizeDateOnly = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  const getMinLicenciaDate = (dateString: string) => {
+    const base = new Date(dateString);
+    if (isNaN(base.getTime())) return undefined;
+    base.setDate(base.getDate() + 1);
+    return base.toISOString().slice(0, 10);
+  };
+
+  const handleUpdateLicencia = async () => {
+    if (!conductorEnLicencia || !nuevaFechaLicencia) return;
+
+    const fechaActual = new Date(conductorEnLicencia.licenciaVencimiento);
+    const fechaNueva = new Date(`${nuevaFechaLicencia}T00:00:00`);
+
+    if (isNaN(fechaActual.getTime()) || isNaN(fechaNueva.getTime())) {
+      toast.error("Fecha inválida");
+      return;
+    }
+
+    const actual = normalizeDateOnly(fechaActual);
+    const nueva = normalizeDateOnly(fechaNueva);
+    const hoy = normalizeDateOnly(new Date());
+
+    if (nueva <= actual) {
+      toast.error("La nueva fecha debe ser mayor a la actual");
+      return;
+    }
+
+    if (nueva < hoy) {
+      toast.error("La nueva fecha no puede ser anterior a hoy");
+      return;
+    }
+
+    try {
+      setIsUpdatingLicencia(true);
+      await maestrosService.updateLicenciaConductor(conductorEnLicencia.id, nuevaFechaLicencia);
+      toast.success("Fecha de vencimiento actualizada");
+      setConductorEnLicencia(null);
+      setNuevaFechaLicencia("");
+      fetchConductores();
+    } catch (error) {
+      toast.error("Error al actualizar la fecha de vencimiento");
+    } finally {
+      setIsUpdatingLicencia(false);
     }
   };
 
@@ -270,6 +323,14 @@ export default function ConductoresPage() {
                                 >
                                   <RefreshCcw className="mr-2 h-4 w-4" /> Cambiar Estado
                                 </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setConductorEnLicencia(conductor);
+                                    setNuevaFechaLicencia("");
+                                  }}
+                                >
+                                  <CalendarDays className="mr-2 h-4 w-4" /> Actualizar Licencia
+                                </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -338,6 +399,46 @@ export default function ConductoresPage() {
               onClick={handleUpdateEstado}
             >
               {isUpdating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Confirmar Cambio"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL: ACTUALIZAR LICENCIA */}
+      <Dialog open={!!conductorEnLicencia} onOpenChange={() => setConductorEnLicencia(null)}>
+        <DialogContent className="sm:max-w-100">
+          <DialogHeader>
+            <DialogTitle>Actualizar Vencimiento de Licencia</DialogTitle>
+            <DialogDescription>
+              Conductor: <span className="font-semibold text-slate-900">
+                {conductorEnLicencia?.nombre} {conductorEnLicencia?.apellido}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-2">
+            <div className="text-sm text-muted-foreground">
+              Vencimiento actual: {conductorEnLicencia ? formatDate(conductorEnLicencia.licenciaVencimiento) : "-"}
+            </div>
+            <Input
+              type="date"
+              value={nuevaFechaLicencia}
+              min={conductorEnLicencia ? getMinLicenciaDate(conductorEnLicencia.licenciaVencimiento) : undefined}
+              onChange={(e) => setNuevaFechaLicencia(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setConductorEnLicencia(null)}>
+              Cancelar
+            </Button>
+            <Button
+              disabled={!nuevaFechaLicencia || isUpdatingLicencia}
+              onClick={handleUpdateLicencia}
+            >
+              {isUpdatingLicencia ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 "Confirmar Cambio"
