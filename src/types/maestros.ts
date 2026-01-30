@@ -3,6 +3,7 @@ import type { BaseResponse, EstadoVehiculo, EstadoConductor } from './common';
 export interface Producto extends BaseResponse {
   nombre: string;
   activo: boolean;
+  precios?: ProductoPrecio[];
 }
 
 export interface ProductoPrecio extends BaseResponse {

@@ -6,7 +6,17 @@ import type { Usuario, UsuarioRequest } from '../../types/auth';
 
 export const maestrosService = {
   // --- VEHÍCULOS ---
-  getVehiculos: async () => (await api.get<Vehiculo[]>('/vehiculos')).data,
+  getVehiculos: async (page = 0, size = 100) => {
+    const response = await api.get<any>('/vehiculos', {
+      params: { page, size }
+    });
+    return {
+      content: response.data.content || [],
+      totalElements: response.data.totalElements || 0,
+      totalPages: response.data.totalPages || 0,
+      number: response.data.number || 0
+    };
+  },
   
   getVehiculosDisponibles: async () => 
     (await api.get<Vehiculo[]>('/vehiculos/disponibles')).data,
@@ -14,13 +24,26 @@ export const maestrosService = {
   createVehiculo: async (data: Partial<Vehiculo>) => 
     (await api.post<Vehiculo>('/vehiculos', data)).data,
     
-  updateVehiculo: async (id: number, data: Partial<Vehiculo>) => 
-    (await api.put<Vehiculo>(`/vehiculos/${id}`, data)).data,
+  updateEstadoVehiculo: async (id: number, nuevoEstado: string) => 
+    (await api.patch<Vehiculo>(`/vehiculos/${id}/estado`, { nuevoEstado })).data,
+
+  deleteVehiculo: async (id: number) => 
+    await api.delete(`/vehiculos/${id}`),
 
   // --- PRODUCTOS ---
-  getProductos: async () => (await api.get<Producto[]>('/productos')).data,
+  getProductos: async (page = 0, size = 100) => {
+    const response = await api.get<any>('/productos', {
+      params: { page, size }
+    });
+    return {
+      content: response.data.content || [],
+      totalElements: response.data.totalElements || 0,
+      totalPages: response.data.totalPages || 0,
+      number: response.data.number || 0
+    };
+  },
   
-  createProducto: async (data: { nombre: string }) => 
+  createProducto: async (data: any) => 
     (await api.post<Producto>('/productos', data)).data,
     
   deleteProducto: async (id: number) => 
@@ -28,10 +51,16 @@ export const maestrosService = {
 
   // --- PRECIOS (Sub-recurso de Productos) ---
   getPreciosPorProducto: async (productoId: number) => 
-    (await api.get<ProductoPrecio[]>(`/productos-precios/producto/${productoId}`)).data,
+    (await api.get<ProductoPrecio[]>(`/precios/producto/${productoId}`)).data,
     
-  asignarPrecio: async (data: { productoId: number; etiqueta: string; valor: number }) => 
-    (await api.post<ProductoPrecio>('/productos-precios', data)).data,
+  createPrecio: async (productoId: number, data: { etiqueta: string; valor: number }) => 
+    (await api.post<ProductoPrecio>(`/precios/producto/${productoId}`, data)).data,
+
+  updatePrecio: async (precioId: number, data: { etiqueta: string; valor: number }) => 
+    (await api.put<ProductoPrecio>(`/precios/${precioId}`, data)).data,
+
+  deletePrecio: async (precioId: number) => 
+    await api.delete(`/precios/${precioId}`),
 
   // --- CONDUCTORES ---
   getConductores: async (page = 0, size = 10) => {

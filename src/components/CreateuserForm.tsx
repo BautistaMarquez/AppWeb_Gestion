@@ -15,7 +15,7 @@ import { maestrosService } from "@/api/services/maestroService";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { usuarioSchema, type UsuarioFormValues } from "@/lib/validations/Usuario";
+import { usuarioSchema, type UsuarioFormValues } from "@/lib/validations/usuario";
 
 interface CreateUserFormProps {
   onSuccess: () => void;

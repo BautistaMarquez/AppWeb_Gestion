@@ -9,6 +9,8 @@ import PersonalMenu from '@/pages/personal/PersonalMenu';
 import UsuariosPage from '@/pages/personal/UsuariosPage';
 import ConductoresPage from '@/pages/personal/ConductoresPage';
 import EquiposPage from '@/pages/personal/EquiposPage';
+import VehiculosPage from '@/pages/vehiculos/VehiculosPage';
+import ProductosPage from '@/pages/productos/ProductosPage';
 
 // Página de "No Autorizado" - Componente simple
 const UnauthorizedPage = () => {
@@ -83,14 +85,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={['ADMINISTRATIVO', 'ADMIN', 'TOTAL']}>
         <DashboardLayout>
-          <ModuleMenuPlaceholder
-            title="Gestión de Productos"
-            description="Sub-menú del módulo (placeholder)."
-            actions={[
-              'CRUD de Productos (Alta / Baja / Modificación).',
-              'Gestión de Tarifarios: etiquetas (Mayorista/Minorista) y actualización de valores.',
-            ]}
-          />
+          <ProductosPage />
         </DashboardLayout>
       </ProtectedRoute>
     ),
@@ -100,15 +95,37 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={['ADMINISTRATIVO', 'ADMIN', 'TOTAL']}>
         <DashboardLayout>
-          <ModuleMenuPlaceholder
-            title="Gestión de Personal"
-            description="Sub-menú del módulo (placeholder)."
-            actions={[
-              'CRUD de Usuarios del sistema (con asignación de Roles).',
-              'Registro y legajo de Conductores.',
-              'Conformación de Equipos de Trabajo (Asociación Supervisor-Conductor).',
-            ]}
-          />
+          <PersonalMenu />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/personal/usuarios',
+    element: (
+      <ProtectedRoute allowedRoles={['ADMINISTRATIVO', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <UsuariosPage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/personal/conductores',
+    element: (
+      <ProtectedRoute allowedRoles={['ADMINISTRATIVO', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <ConductoresPage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/personal/equipos',
+    element: (
+      <ProtectedRoute allowedRoles={['ADMINISTRATIVO', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <EquiposPage />
         </DashboardLayout>
       </ProtectedRoute>
     ),
@@ -118,14 +135,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={['ADMINISTRATIVO', 'ADMIN', 'TOTAL']}>
         <DashboardLayout>
-          <ModuleMenuPlaceholder
-            title="Gestión de Vehículos"
-            description="Sub-menú del módulo (placeholder)."
-            actions={[
-              'Registro de Unidades (Patente, Modelo).',
-              'Control de Estado (DISPONIBLE, MANTENIMIENTO, EN_VIAJE).',
-            ]}
-          />
+          <VehiculosPage />
         </DashboardLayout>
       </ProtectedRoute>
     ),
@@ -149,36 +159,6 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
-  {
-  path: "personal",
-  children: [
-    { index: true, element: <PersonalMenu /> }, // La pantalla de las 3 cards
-    { path: "usuarios", element: <UsuariosPage /> },
-    { path: "conductores", element: <ConductoresPage /> },
-    { path: "equipos", element: <EquiposPage /> },
-  ]
-  },
-  // Ejemplo de rutas protegidas con roles específicos
-  // {
-  //   path: '/admin',
-  //   element: (
-  //     <ProtectedRoute allowedRoles={['ADMIN', 'TOTAL']}>
-  //       <DashboardLayout>
-  //         <AdminPanel />
-  //       </DashboardLayout>
-  //     </ProtectedRoute>
-  //   ),
-  // },
-  // {
-  //   path: '/supervisor',
-  //   element: (
-  //     <ProtectedRoute allowedRoles={['SUPERVISOR', 'SUPERVISOR_PLANTA', 'ADMIN', 'TOTAL']}>
-  //       <DashboardLayout>
-  //         <SupervisorPanel />
-  //       </DashboardLayout>
-  //     </ProtectedRoute>
-  //   ),
-  // },
   {
     path: '*',
     element: <Navigate to="/" replace />,

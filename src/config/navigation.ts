@@ -46,7 +46,7 @@ export const MODULES_CONFIG: readonly ModuleConfig[] = [
   {
     id: "productos",
     title: "Productos",
-    description: "ABM de productos y gestión de tarifarios (Mayorista/Minorista).",
+    description: "ABM de productos y gestión de tarifarios.",
     icon: Package,
     routeFront: "/productos",
     allowedRoles: ["ADMINISTRATIVO", "ADMIN", "TOTAL"],

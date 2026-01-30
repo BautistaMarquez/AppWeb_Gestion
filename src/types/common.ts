@@ -10,7 +10,8 @@ export interface BaseResponse {
 export const EstadoVehiculo = {
   DISPONIBLE: 'DISPONIBLE',
   EN_VIAJE: 'EN_VIAJE',
-  MANTENIMIENTO: 'MANTENIMIENTO'
+  MANTENIMIENTO: 'MANTENIMIENTO',
+  ELIMINADO: 'ELIMINADO'
 } as const;
 
 export const EstadoConductor = {
