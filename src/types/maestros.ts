@@ -26,6 +26,9 @@ export interface Conductor extends BaseResponse {
   estado: EstadoConductor;
   licenciaVencimiento: string;
   nombreEquipo: string; // Flattening desde el backend
+  equipoId?: number; // ID del equipo al que pertenece
+  supervisorId?: number; // ID del supervisor del equipo
+  supervisorNombre?: string; // Nombre del supervisor
 }
 
 export interface ConductorRequest {

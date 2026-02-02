@@ -11,6 +11,10 @@ import ConductoresPage from '@/pages/personal/ConductoresPage';
 import EquiposPage from '@/pages/personal/EquiposPage';
 import VehiculosPage from '@/pages/vehiculos/VehiculosPage';
 import ProductosPage from '@/pages/productos/ProductosPage';
+import ViajesMenu from '@/pages/Viajes/ViajesMenu';
+import IniciarViaje from '@/pages/Viajes/IniciarViaje';
+import ViajesActivos from '@/pages/Viajes/ViajesActivos';
+import HistorialDeViajes from '@/pages/Viajes/HistorialDeViajes';
 
 // Página de "No Autorizado" - Componente simple
 const UnauthorizedPage = () => {
@@ -67,15 +71,37 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={['SUPERVISOR_PLANTA', 'ADMIN', 'TOTAL']}>
         <DashboardLayout>
-          <ModuleMenuPlaceholder
-            title="Gestión de Logística (Viajes)"
-            description="Sub-menú del módulo (placeholder)."
-            actions={[
-              'Iniciar viaje: registro con validación de disponibilidad de Vehículo y Conductor.',
-              'Control de flota en ruta: listado de viajes en estado EN_PROCESO.',
-              'Finalización de viaje: cierre de auditoría con carga de stock de retorno.',
-            ]}
-          />
+          <ViajesMenu />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/logistica/iniciar-viaje',
+    element: (
+      <ProtectedRoute allowedRoles={['SUPERVISOR_PLANTA', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <IniciarViaje />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/logistica/viajes-activos',
+    element: (
+      <ProtectedRoute allowedRoles={['SUPERVISOR_PLANTA', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <ViajesActivos />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/logistica/historial',
+    element: (
+      <ProtectedRoute allowedRoles={['SUPERVISOR_PLANTA', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <HistorialDeViajes />
         </DashboardLayout>
       </ProtectedRoute>
     ),

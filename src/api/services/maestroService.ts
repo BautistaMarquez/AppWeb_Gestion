@@ -78,6 +78,9 @@ export const maestrosService = {
   
   getConductoresDisponibles: async () => 
     (await api.get<Conductor[]>('/conductores/disponibles')).data,
+
+  getConductoresDisponiblesConEquipo: async () => 
+    (await api.get<Conductor[]>('/conductores/disponibles/con-equipo')).data,
     
   createConductor: async (data: any) => 
     (await api.post<Conductor>('/conductores', data)).data,

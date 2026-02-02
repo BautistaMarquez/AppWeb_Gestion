@@ -1,28 +1,40 @@
 import api from '../axios';
-import type { Viaje, CreateViajeRequest } from '../../types/logistica';
+import type { 
+  ViajeResponseDTO, 
+  CreateViajeRequest, 
+  ViajeCierreRequest,
+  ViajeSearchDTO,
+  PagedResponse 
+} from '../../types/logistica';
 
 export const logisticaService = {
-  // HU #1: Iniciar
+  // HU #1: Iniciar viaje
   iniciarViaje: async (data: CreateViajeRequest) => 
-    (await api.post<Viaje>('/viajes', data)).data,
+    (await api.post<ViajeResponseDTO>('/viajes', data)).data,
 
-  // HU #2: Finalizar (Snapshot de cierre)
-  finalizarViaje: async (id: number, cierreData: { detalles: any[] }) => 
-    (await api.patch<Viaje>(`/viajes/${id}/finalizar`, cierreData)).data,
+  // HU #2: Finalizar viaje (Snapshot de cierre)
+  finalizarViaje: async (cierreData: ViajeCierreRequest) => 
+    (await api.patch<ViajeResponseDTO>('/viajes/finalizar', cierreData)).data,
 
-  // Búsqueda y Filtrado (Mapeado a ViajeSpecification en el Back)
-  searchViajes: async (filtros: {
-    estado?: string;
-    fechaDesde?: string;
-    fechaHasta?: string;
-    vehiculoId?: number;
-  }) => {
-    const response = await api.get<Viaje[]>('/viajes/search', { params: filtros });
+  // Listar viajes con paginación
+  listarViajes: async (page = 0, size = 10) => {
+    const response = await api.get<PagedResponse<ViajeResponseDTO>>('/viajes', {
+      params: { page, size }
+    });
     return response.data;
   },
 
+  // Búsqueda y Filtrado con paginación
+  buscarViajes: async (filtros: ViajeSearchDTO, page = 0, size = 10) => {
+    const response = await api.get<PagedResponse<ViajeResponseDTO>>('/viajes/filter', { 
+      params: { ...filtros, page, size } 
+    });
+    return response.data;
+  },
+
+  // Obtener viaje por ID
   getViajeById: async (id: number) => 
-    (await api.get<Viaje>(`/viajes/${id}`)).data,
+    (await api.get<ViajeResponseDTO>(`/viajes/${id}`)).data,
 
   // Dashboard y Estadísticas (Capa Gerencial)
   getDashboardStats: async () => 
