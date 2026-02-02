@@ -202,7 +202,7 @@ export default function HistorialDeViajes() {
                       ${viaje.ventaTotal.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge className="bg-green-100 text-green-700 border-green-200">
+                      <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
                         {viaje.estado}
                       </Badge>
                     </TableCell>
@@ -247,10 +247,6 @@ export default function HistorialDeViajes() {
                   <p className="font-medium">{viajeSeleccionado.conductorNombre}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Supervisor</p>
-                  <p className="font-medium">{viajeSeleccionado.supervisorNombre}</p>
-                </div>
-                <div>
                   <p className="text-sm text-slate-500">Estado</p>
                   <Badge className="bg-green-100 text-green-700 border-green-200">
                     {viajeSeleccionado.estado}
@@ -274,12 +270,6 @@ export default function HistorialDeViajes() {
                   <p className="text-sm text-slate-500">Duración del Viaje</p>
                   <p className="font-medium">
                     {calcularDuracionViaje(viajeSeleccionado.fechaInicio, viajeSeleccionado.fechaFin)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500">Venta Total</p>
-                  <p className="font-medium text-lg text-green-600">
-                    ${viajeSeleccionado.ventaTotal.toFixed(2)}
                   </p>
                 </div>
               </div>

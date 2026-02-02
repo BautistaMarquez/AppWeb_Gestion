@@ -194,19 +194,19 @@ export default function IniciarViaje() {
         return;
       }
 
-      // Mostrar que estamos enviando los datos
       console.log("📤 Enviando datos de viaje al backend:", JSON.stringify(data, null, 2));
-      toast.loading("Procesando inicio de viaje...");
-
-      const respuesta = await logisticaService.iniciarViaje(data);
+    const loadingToastId = toast.loading("Procesando inicio de viaje...");
       
-      console.log("✅ Viaje creado exitosamente:", respuesta);
-      toast.success("Viaje iniciado correctamente");
+    const respuesta = await logisticaService.iniciarViaje(data);
       
-      // Esperar un poco para que el toast sea visible
-      setTimeout(() => {
-        navigate("/logistica/viajes-activos");
-      }, 1000);
+    console.log("✅ Viaje creado exitosamente:", respuesta);
+    toast.dismiss(loadingToastId); // ← Descartar el toast de loading
+    toast.success("Viaje iniciado correctamente");
+      
+    // Esperar un poco para que el toast sea visible
+    setTimeout(() => {
+      navigate("/logistica/viajes-activos");
+    }, 1000);
     } catch (error: any) {
       console.error("❌ Error iniciando viaje:", error);
       const mensaje = error.response?.data?.message || error.message || "Error al iniciar el viaje";

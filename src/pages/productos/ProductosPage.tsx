@@ -5,9 +5,10 @@ import {
   Search, 
   ArrowLeft,
   Loader2,
-  Trash2,
   DollarSign,
-  Edit2
+  Edit2,
+  Eye,
+  Trash2
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,11 +20,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 import { maestrosService } from "@/api/services/maestroService";
 import { useAuthStore } from "@/store/authStore";
@@ -33,7 +44,7 @@ import { agregarPrecioSchema, actualizarPrecioSchema, type AgregarPrecioFormValu
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type ModalType = 'crear' | 'agregarPrecio' | 'actualizarPrecio' | 'eliminarPrecio' | null;
+type ModalType = 'crear' | 'agregarPrecio' | 'actualizarPrecio' | 'verValores' | null;
 
 export default function ProductosPage() {
   const navigate = useNavigate();
@@ -70,7 +81,8 @@ export default function ProductosPage() {
   const fetchProductos = async () => {
     try {
       setLoading(true);
-      const response = await maestrosService.getProductos();
+      // Usar el endpoint que trae TODOS los productos (activos e inactivos)
+      const response = await maestrosService.getAllProductosForAdmin();
       setProductos(response.content);
     } catch (error) {
       console.error("Error fetching productos:", error);
@@ -84,23 +96,41 @@ export default function ProductosPage() {
     fetchProductos();
   }, []);
 
-  // Eliminar producto (desactivar)
-  const handleEliminarProducto = async (producto: Producto) => {
-    if (window.confirm(`¿Estás seguro de eliminar el producto ${producto.nombre}? Esta acción es irreversible.`)) {
+  // Toggle producto activo/desactivar
+  const handleToggleActivoProducto = async (producto: Producto) => {
+    const accion = producto.activo ? "desactivar" : "activar";
+    if (window.confirm(`¿Estás seguro de ${accion} el producto ${producto.nombre}?`)) {
       try {
         setIsProcessing(true);
-        await maestrosService.deleteProducto(producto.id);
-        toast.success(`Producto ${producto.nombre} eliminado`);
+        if (producto.activo) {
+          await maestrosService.deleteProducto(producto.id);
+          toast.success(`Producto ${producto.nombre} desactivado`);
+        } else {
+          await maestrosService.reactivarProducto(producto.id);
+          toast.success(`Producto ${producto.nombre} activado`);
+        }
         fetchProductos();
       } catch (error) {
-        toast.error("Error al eliminar el producto");
+        toast.error(`Error al ${accion} el producto`);
       } finally {
         setIsProcessing(false);
       }
     }
   };
 
-  // Abrir modal para agregar precio
+  // Abrir modal para ver valores de un producto
+  const handleAbrirVerValores = (producto: Producto) => {
+    setProductoSeleccionado(producto);
+    setModalType('verValores');
+  };
+
+  // Abrir modal para agregar precio desde Ver Valores
+  const handleAbrirAgregarPrecioDesdeVerValores = () => {
+    agregarPrecioForm.reset();
+    setModalType('agregarPrecio');
+  };
+
+  // Abrir modal para agregar precio (directo)
   const handleAbrirAgregarPrecio = (producto: Producto) => {
     setProductoSeleccionado(producto);
     agregarPrecioForm.reset();
@@ -118,9 +148,10 @@ export default function ProductosPage() {
         valor: data.valor,
       });
       toast.success(`Precio "${data.etiqueta}" agregado exitosamente`);
-      setModalType(null);
       agregarPrecioForm.reset();
-      fetchProductos();
+      await fetchProductos();
+      // Volver al modal Ver Valores
+      setModalType('verValores');
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || "Error al agregar el precio";
       toast.error(errorMsg);
@@ -150,9 +181,10 @@ export default function ProductosPage() {
         valor: data.valor,
       });
       toast.success(`Precio "${precioSeleccionado.etiqueta}" actualizado`);
-      setModalType(null);
       actualizarPrecioForm.reset();
-      fetchProductos();
+      await fetchProductos();
+      // Volver al modal Ver Valores
+      setModalType('verValores');
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || "Error al actualizar el precio";
       toast.error(errorMsg);
@@ -168,7 +200,8 @@ export default function ProductosPage() {
         setIsProcessing(true);
         await maestrosService.deletePrecio(precio.id);
         toast.success(`Precio "${precio.etiqueta}" eliminado`);
-        fetchProductos();
+        await fetchProductos();
+        // Mantenerse en el modal Ver Valores
       } catch (error: any) {
         const errorMsg = error.response?.data?.message || "Error al eliminar el precio";
         toast.error(errorMsg);
@@ -200,7 +233,7 @@ export default function ProductosPage() {
   return (
     <div className="container mx-auto px-4 py-6 animate-in fade-in duration-500">
       
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
@@ -238,103 +271,76 @@ export default function ProductosPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {loading ? (
-                <div className="h-24 flex items-center justify-center text-muted-foreground">
-                  Cargando...
-                </div>
-              ) : filteredProductos.length === 0 ? (
-                <div className="h-32 flex items-center justify-center text-muted-foreground">
-                  No hay resultados.
-                </div>
-              ) : (
-                filteredProductos.map((producto) => (
-                  <div key={producto.id} className="border border-slate-200 rounded-lg p-4 space-y-3">
-                    {/* Header del Producto */}
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-slate-900">{producto.nombre}</h3>
-                        <p className="text-xs text-muted-foreground">
-                          {producto.precios?.length || 0} {producto.precios?.length === 1 ? 'precio' : 'precios'}
-                        </p>
-                      </div>
-                      <Badge variant="outline" className={producto.activo ? "bg-green-100 text-green-700 border-green-200" : "bg-slate-100 text-slate-600 border-slate-200"}>
-                        {producto.activo ? "ACTIVO" : "INACTIVO"}
-                      </Badge>
-                    </div>
-
-                    {/* Tabla de Precios */}
-                    {producto.precios && producto.precios.length > 0 ? (
-                      <div className="mt-3 rounded-md border border-slate-200 overflow-hidden">
-                        <table className="w-full text-sm">
-                          <thead className="bg-slate-50 border-b border-slate-200">
-                            <tr>
-                              <th className="px-3 py-2 text-left font-medium text-slate-600">Etiqueta</th>
-                              <th className="px-3 py-2 text-left font-medium text-slate-600">Valor</th>
-                              <th className="px-3 py-2 text-right font-medium text-slate-600">Acciones</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {producto.precios.map((precio) => (
-                              <tr key={precio.id} className="border-t border-slate-200 hover:bg-slate-50/50">
-                                <td className="px-3 py-2 text-slate-900">{precio.etiqueta}</td>
-                                <td className="px-3 py-2 text-slate-900 font-medium">{formatPrice(precio.valor)}</td>
-                                <td className="px-3 py-2 text-right space-x-1">
-                                  {producto.activo && (
-                                    <>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleAbrirActualizarPrecio(precio)}
-                                        className="h-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                      >
-                                        <Edit2 className="h-3.5 w-3.5" />
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleEliminarPrecio(precio)}
-                                        className="h-7 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                      >
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                      </Button>
-                                    </>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : (
-                      <div className="text-xs text-muted-foreground italic">Sin precios asignados</div>
-                    )}
-
-                    {/* Acciones del Producto */}
-                    {producto.activo && (
-                      <div className="flex gap-2 pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleAbrirAgregarPrecio(producto)}
-                          className="gap-2 flex-1 sm:flex-none"
-                        >
-                          <DollarSign className="h-4 w-4" /> Agregar Precio
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEliminarProducto(producto)}
-                          className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" /> Eliminar
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
+            {loading ? (
+              <div className="h-24 flex items-center justify-center text-muted-foreground">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : filteredProductos.length === 0 ? (
+              <div className="h-32 flex items-center justify-center text-muted-foreground">
+                No hay resultados.
+              </div>
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Producto</TableHead>
+                      <TableHead className="text-center">Precios Asignados</TableHead>
+                      <TableHead className="text-center">Estado</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProductos.map((producto) => (
+                      <TableRow key={producto.id}>
+                        <TableCell className="font-medium">{producto.nombre}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant="secondary">
+                            {producto.precios?.length || 0} {producto.precios?.length === 1 ? 'precio' : 'precios'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <Switch
+                              checked={producto.activo}
+                              onCheckedChange={() => handleToggleActivoProducto(producto)}
+                              disabled={isProcessing}
+                            />
+                            <Label className="text-xs">
+                              {producto.activo ? "Activo" : "Inactivo"}
+                            </Label>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleAbrirVerValores(producto)}
+                              className="h-8 gap-1.5"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              Ver Valores
+                            </Button>
+                            {producto.activo && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleAbrirAgregarPrecio(producto)}
+                                className="h-8 gap-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              >
+                                <DollarSign className="h-3.5 w-3.5" />
+                                Agregar Precio
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -352,6 +358,80 @@ export default function ProductosPage() {
               fetchProductos();
             }}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL: VER VALORES */}
+      <Dialog open={modalType === 'verValores'} onOpenChange={closeModal}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Valores de Producto</DialogTitle>
+            <DialogDescription>
+              Producto: <span className="font-semibold text-slate-900">{productoSeleccionado?.nombre}</span>
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {productoSeleccionado?.precios && productoSeleccionado.precios.length > 0 ? (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Etiqueta</TableHead>
+                      <TableHead>Valor</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {productoSeleccionado.precios.map((precio) => (
+                      <TableRow key={precio.id}>
+                        <TableCell className="font-medium">{precio.etiqueta}</TableCell>
+                        <TableCell className="font-medium text-green-600">
+                          {formatPrice(precio.valor)}
+                        </TableCell>
+                        <TableCell className="text-right space-x-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleAbrirActualizarPrecio(precio)}
+                            className="h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            disabled={isProcessing}
+                          >
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEliminarPrecio(precio)}
+                            className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            disabled={isProcessing}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>Este producto no tiene precios asignados.</p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={closeModal}>
+              Cerrar
+            </Button>
+            {productoSeleccionado?.activo && (
+              <Button onClick={handleAbrirAgregarPrecioDesdeVerValores}>
+                <Plus className="h-4 w-4 mr-2" />
+                Agregar Precio
+              </Button>
+            )}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

@@ -43,11 +43,27 @@ export const maestrosService = {
     };
   },
   
+  // Obtener TODOS los productos (activos e inactivos) para gestión administrativa
+  getAllProductosForAdmin: async (page = 0, size = 100) => {
+    const response = await api.get<any>('/productos/admin/all', {
+      params: { page, size }
+    });
+    return {
+      content: response.data.content || [],
+      totalElements: response.data.totalElements || 0,
+      totalPages: response.data.totalPages || 0,
+      number: response.data.number || 0
+    };
+  },
+  
   createProducto: async (data: any) => 
     (await api.post<Producto>('/productos', data)).data,
     
   deleteProducto: async (id: number) => 
     await api.delete(`/productos/${id}`),
+    
+  reactivarProducto: async (id: number) =>
+    await api.patch(`/productos/${id}/reactivar`),
 
   // --- PRECIOS (Sub-recurso de Productos) ---
   getPreciosPorProducto: async (productoId: number) => 
