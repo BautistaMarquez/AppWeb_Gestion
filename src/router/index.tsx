@@ -3,7 +3,11 @@ import DashboardLayout from '@/layouts/DashboardLayout';
 import DashboardHome from '@/components/DashboardHome';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import LoginPage from '@/pages/Login';
-import DashboardStats from '@/pages/DashboardStats';
+import DashboardMenu from '@/pages/dashboard/DashboardMenu';
+import KpiView from '@/pages/dashboard/KpiPage';
+import ChartsView from '@/pages/dashboard/ChartsPage';
+import AuditView from '@/pages/dashboard/AuditoriaPage';
+import { DashboardProvider } from '@/context/DashboardContext';
 import ModuleMenuPlaceholder from '@/pages/ModuleMenuPlaceholder';
 import PersonalMenu from '@/pages/personal/PersonalMenu';
 import UsuariosPage from '@/pages/personal/UsuariosPage';
@@ -61,7 +65,45 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={['SUPERVISOR', 'ADMIN', 'TOTAL']}>
         <DashboardLayout>
-          <DashboardStats />
+          <DashboardProvider>
+            <DashboardMenu />
+          </DashboardProvider>
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/dashboard/kpis',
+    element: (
+      <ProtectedRoute allowedRoles={['SUPERVISOR', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <DashboardProvider>
+            <KpiView />
+          </DashboardProvider>
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/dashboard/charts',
+    element: (
+      <ProtectedRoute allowedRoles={['SUPERVISOR', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <DashboardProvider>
+            <ChartsView />
+          </DashboardProvider>
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/dashboard/audit',
+    element: (
+      <ProtectedRoute allowedRoles={['SUPERVISOR', 'ADMIN', 'TOTAL']}>
+        <DashboardLayout>
+          <DashboardProvider>
+            <AuditView />
+          </DashboardProvider>
         </DashboardLayout>
       </ProtectedRoute>
     ),
